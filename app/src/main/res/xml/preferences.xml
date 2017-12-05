@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+   xmlns:android="http://schemas.android.com/apk/res/android">
+
+   <ListPreference
+      android:entries="@array/guesses_list"
+      android:entryValues="@array/guesses_list"
+      android:key="pref_numberOfChoices"
+      android:title="@string/number_of_choices"
+      android:summary="@string/number_of_choices_description"
+      android:persistent="true"
+      android:defaultValue="4" />
+
+   <MultiSelectListPreference
+      android:entries="@array/regions_list_for_settings"
+      android:entryValues="@array/regions_list"
+      android:key="pref_regionsToInclude"
+      android:title="@string/world_regions"
+      android:summary="@string/world_regions_description"
+      android:persistent="true"
+      android:defaultValue="@array/regions_list" />
+
+
+   <!--TODO 4: List of the choices for NumberOfQuestions-->
+   <ListPreference
+       android:entries="@array/number_of_questions"
+       android:entryValues="@array/number_of_questions"
+       android:key="pref_numberOfQuestions"
+       android:title="@string/number_of_questions"
+       android:persistent="true"
+       android:summary="@string/no_of_questions_summary"/>
+
+   <!--TODO 9: Highest score achieved in the game so far-->
+   <Preference
+       android:key="@string/pref_highestscore"
+       android:summary="@string/highest_score_achieve_settings"
+       android:persistent="true" />
+
+</PreferenceScreen>
