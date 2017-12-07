@@ -448,15 +448,15 @@ public class MainActivityFragment extends Fragment{
             }
             else {
                // answer is correct but quiz is not over
-               /*load the next flag after a 2-second delay
+               //load the next flag after a 2-second delay
                handler.postDelayed(
                        new Runnable() {
                           @Override
                           public void run() {
                              animate(true); // animate the flag off the screen
                           }
-                       }, 2000); // 2000 milliseconds for 2-second delay */
-               bonusQuestion(); //TODO 8:
+                       }, 2000); // 2000 milliseconds for 2-second delay
+               //bonusQuestion(); //TODO 8:
             }
 
          }
