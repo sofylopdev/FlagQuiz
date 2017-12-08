@@ -71,6 +71,8 @@ public class MainActivityFragment extends Fragment{
    //TODO 9: savedScore to be shared within SettingsActivityFragment
    public static int savedScore = 0;
 
+   private boolean isBonus = false;//checks if the current question is a bonus question or not
+
    // configures the MainActivityFragment when its View is created
    @Override
    public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -183,8 +185,15 @@ public class MainActivityFragment extends Fragment{
             // get a list of all flag image files in this region
             String[] paths = assets.list(region);
 
-            for (String path : paths)
+            for (String path : paths){
+               //This splits the name of the image in 2 or 3 parts
+               //depending if they have the capital name or not
+               String[] splitedImageName = path.split("-");
+               //We are only adding the strings that have the capital included:
+               if (splitedImageName.length == 3)
                fileNameList.add(path.replace(".png", ""));
+            }
+
          }
       }
       catch (IOException exception) {
@@ -241,7 +250,8 @@ public class MainActivityFragment extends Fragment{
          Drawable flag = Drawable.createFromStream(stream, nextImage);
          flagImageView.setImageDrawable(flag);
 
-         animate(false); // animate the flag onto the screen
+         animate(false, false); // animate the flag onto the screen
+                                                   // and we want the country question
       }
       catch (IOException exception) {
          Log.e(TAG, "Error loading " + nextImage, exception);
@@ -287,7 +297,9 @@ public class MainActivityFragment extends Fragment{
    }
 
    // animates the entire quizLinearLayout on or off screen
-   private void animate(boolean animateOut) {
+   //Added the boolean because we need to check if this method was called when we were on the bonus question or not
+   //Its final because we need to use it inside an inner class (AnimatorListenerAdapter)
+   private void animate(boolean animateOut, final boolean isBonus) {
       // prevent animation into the the UI for the first flag
       if (correctAnswers == 0)
          return;
@@ -314,7 +326,10 @@ public class MainActivityFragment extends Fragment{
                // called when the animation finishes
                @Override
                public void onAnimationEnd(Animator animation) {
-                  loadNextFlag();
+
+                  if (isBonus)//we want to start a bonus question
+                     bonusQuestion();
+                  else loadNextFlag();//we want to start a country question
                }
             }
          );
@@ -336,7 +351,12 @@ public class MainActivityFragment extends Fragment{
       public void onClick(View v) {
          Button guessButton = ((Button) v);
          String guess = guessButton.getText().toString();
-         String answer = getCountryName(correctAnswer);
+         String answer;//the correct answer
+         if (isBonus) {//if this is a bonus question, then get the correct capital:
+            answer = getCountryCapitalName(correctAnswer);
+         } else {//if this is NOT a bonus question, then get the correct country:
+            answer = getCountryName(correctAnswer);
+         }
          ++totalGuesses; // increment number of guesses the user has made
 
          /*
@@ -350,9 +370,10 @@ public class MainActivityFragment extends Fragment{
          ++guessMadeByUser;
 
          if (guess.equals(answer)) { // if the guess is correct
+            if (!isBonus) //Only increment the number of correct answers if this is not a bonus question
             ++correctAnswers; // increment the number of correct answers
 
-
+            if (!isBonus) {//This limits the adding score points to the country questions (can be removed)
             //TODO 5: Switch statement to determine how many guesses the user has, calc the score
             //Based on first 4 guessed the user will gain points otherwise nothing also applying the same theme
             switch (guessMadeByUser){
@@ -387,6 +408,7 @@ public class MainActivityFragment extends Fragment{
                   break;
                default:
                   tv_score.setText("Score: " + String.valueOf(score));
+            }
             }
             guessMadeByUser = 0; //Reset the guess to zero after calculating the score for the current Question
 
@@ -453,7 +475,13 @@ public class MainActivityFragment extends Fragment{
                        new Runnable() {
                           @Override
                           public void run() {
-                             animate(true); // animate the flag off the screen
+                             if (!isBonus) {
+                                isBonus = true;//if it comes from country question, next question is a bonus question
+                                animate(true, isBonus); // animate the flag off the screen
+                             } else {
+                                isBonus = false;//if it comes from bonus question, next question is country question
+                                animate(true, isBonus);
+                             } // animate the flag off the screen
                           }
                        }, 2000); // 2000 milliseconds for 2-second delay
                //bonusQuestion(); //TODO 8:
@@ -495,8 +523,10 @@ public class MainActivityFragment extends Fragment{
       guessCountryTextView.setText(R.string.guess_the_capital);
 
       // get file name of the next flag and remove it from the list
-      String nextImage = quizCountriesList.remove(0);
-      correctAnswer = nextImage; // update the correct answer
+      // Removed the next 2 lines because we only want to go to next flag
+      // IF we are going to next country
+//      String nextImage = quizCountriesList.remove(0);
+//      correctAnswer = nextImage; // update the correct answer
       answerTextView.setText(""); // clear answerTextView
 
       // put the correct answer at the end of fileNameList
@@ -513,6 +543,7 @@ public class MainActivityFragment extends Fragment{
             Button newGuessButton =
                     (Button) guessLinearLayouts[row].getChildAt(column);
             newGuessButton.setEnabled(true);
+            newGuessButton.setOnClickListener(guessButtonListener);//set the listener to the buttons
 
             // get country capital name and set it as newGuessButton's text
             String filename = fileNameList.get((row * 2) + column);
